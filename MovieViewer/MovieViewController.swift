@@ -16,7 +16,8 @@ class MovieViewController: UIViewController,UITableViewDataSource,UITableViewDel
     @IBOutlet weak var tableView: UITableView!
     
     var movies: [NSDictionary]?
-     let refreshControl = UIRefreshControl()
+    let refreshControl = UIRefreshControl()
+    var endpoint: String!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -28,7 +29,7 @@ class MovieViewController: UIViewController,UITableViewDataSource,UITableViewDel
         // Do any additional setup after loading the view.
         
         let apiKey = "a07e22bc18f5cb106bfe4cc1f83ad8ed"
-        let url = NSURL(string:"https://api.themoviedb.org/3/movie/now_playing?api_key=\(apiKey)")
+        let url = NSURL(string:"https://api.themoviedb.org/3/movie/\(endpoint)?api_key=\(apiKey)")
         let request = NSURLRequest(URL: url!)
         let session = NSURLSession(
             configuration: NSURLSessionConfiguration.defaultSessionConfiguration(),
@@ -45,7 +46,7 @@ class MovieViewController: UIViewController,UITableViewDataSource,UITableViewDel
                 if let data = dataOrNil {
                     if let responseDictionary = try! NSJSONSerialization.JSONObjectWithData(
                         data, options:[]) as? NSDictionary {
-                            NSLog("response: \(responseDictionary)")
+                            //NSLog("response: \(responseDictionary)")
                             
                             self.movies = responseDictionary["results"] as? [NSDictionary]
                             self.tableView.reloadData()
@@ -61,7 +62,7 @@ class MovieViewController: UIViewController,UITableViewDataSource,UITableViewDel
     func refreshControlAction()
     {
         let apiKey = "a07e22bc18f5cb106bfe4cc1f83ad8ed"
-        let url = NSURL(string:"https://api.themoviedb.org/3/movie/now_playing?api_key=\(apiKey)")
+        let url = NSURL(string:"https://api.themoviedb.org/3/movie/\(endpoint)?api_key=\(apiKey)")
         let request = NSURLRequest(URL: url!)
         let session = NSURLSession(
             configuration: NSURLSessionConfiguration.defaultSessionConfiguration(),
@@ -79,7 +80,7 @@ class MovieViewController: UIViewController,UITableViewDataSource,UITableViewDel
                 if let data = dataOrNil {
                     if let responseDictionary = try! NSJSONSerialization.JSONObjectWithData(
                         data, options:[]) as? NSDictionary {
-                            NSLog("response: \(responseDictionary)")
+                            //NSLog("response: \(responseDictionary)")
                             
                             self.movies = responseDictionary["results"] as? [NSDictionary]
                            self.tableView.reloadData()
@@ -115,30 +116,39 @@ class MovieViewController: UIViewController,UITableViewDataSource,UITableViewDel
         let title = movie["title"] as! String
         let baseUrl = "http://image.tmdb.org/t/p/w342"
         let overview = movie["overview"] as! String
-        let posterPath = movie["poster_path"] as! String
+        if let posterPath = movie["poster_path"] as? String
+        {
         
         let imageUrl = NSURL(string: baseUrl+posterPath)
-        
-        
+        cell.posterView.setImageWithURL(imageUrl!)
+        }
         cell.titleLabel.text = title
         cell.overviewLabel.text = overview
-        cell.posterView.setImageWithURL(imageUrl!)
+        
+        let backgroundView = UIView()
+        backgroundView.backgroundColor = UIColor.grayColor()
+        cell.selectedBackgroundView = backgroundView
         
         
         
-        
-        print("row\(indexPath.row)")
+       
         return cell
     }
 
-    /*
+    
     // MARK: - Navigation
 
     // In a storyboard-based application, you will often want to do a little preparation before navigation
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
         // Get the new view controller using segue.destinationViewController.
         // Pass the selected object to the new view controller.
+        let cell = sender as! UITableViewCell
+        let indexPath = tableView.indexPathForCell(cell)
+        let movie = movies![indexPath!.row]
+        
+        let detailViewController = segue.destinationViewController as! DetailViewController
+        detailViewController.movie = movie
     }
-    */
+
 
 }
